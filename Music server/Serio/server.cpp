@@ -4,6 +4,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <fstream>
+#include <dirent.h>
 
 
 using namespace std;
@@ -26,16 +27,58 @@ void fileToMesage(const string& fileName, message& msg) {
   msg.add_raw(bytes.data(), bytes.size());
 }
 
+string split(string s, char del){
+  string nameSong = "";
+  for (int i = 0; i < int(s.size()); i++) {
+    if (s[i] != del)
+      nameSong += s[i];
+    else
+      break;
+   }
+   return nameSong;
+}
+
+
+  
+unordered_map<string,string> ReadDir(string path , unordered_map<string,string> songs){
+  
+  DIR *dir;
+
+  struct dirent *ent;
+
+  string file_name,key;
+
+  dir = opendir(path.c_str());
+
+  if (dir == NULL){
+      cout<<"no se pudo abrir el directorio";
+  }
+while ((ent = readdir (dir)) != NULL)
+    {
+      file_name = ent->d_name;
+      if ( file_name.find(".ogg") != string::npos) {
+        key = split(file_name,'.');
+        songs[key] = path + file_name;
+          }
+    }
+  closedir (dir);
+  return songs;
+
+}
+
+
 int main(int argc, char** argv) {
+
+
   context ctx;
   socket s(ctx, socket_type::rep);
   s.bind("tcp://*:5555");
 
   string path(argv[1]);
+
   unordered_map<string,string> songs;
-  songs["s1"] = path + "s1.ogg";
-  songs["s2"] = path + "s2.ogg";
-  songs["s3"] = path + "s3.ogg";
+  
+  songs = ReadDir(path,songs);
 
   cout << "Start serving requests!\n";
   while(true) {
@@ -45,7 +88,7 @@ int main(int argc, char** argv) {
     string op;
     m >> op;
 
-    cout << "Action:  " << op << endl;
+    cout << "----Action:  " << op << endl;
     if (op == "list") {  // Use case 1: Send the songs
       message n;
       n << "list" << songs.size();
@@ -62,8 +105,27 @@ int main(int argc, char** argv) {
       n << "file";
       fileToMesage(songs[songName], n);
       s.send(n);
+    } else if(op == "add"){
+      string songName;
+      m >> songName;
+      cout << songName;
+      if (( songs.count(songName)) == 1){
+        cout << "enqueuing song " << songName;
+        message n;
+        n << "add";
+        n << songName;
+        s.send(n);
+      }else{
+        cout << "Invalid song requested!!\n";
+        message n;
+        n<<"Ns";
+        s.send(n);
+      }
     } else {
       cout << "Invalid operation requested!!\n";
+      message n;
+      n<<"Nop";
+      s.send(n);
     }
   }
 
