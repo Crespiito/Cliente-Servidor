@@ -10,20 +10,36 @@
 using namespace std;
 using namespace zmqpp;
 
-vector<char> readFileToBytes(const string& fileName) {
+vector<char> readFileToBytes(const string& fileName,int part) {
+  int parts;
   ifstream ifs(fileName, ios::binary | ios::ate);
   ifstream::pos_type pos = ifs.tellg();
-
-  vector<char> result(pos);
-
-  ifs.seekg(0, ios::beg);
-  ifs.read(result.data(), pos);
-
+  ifs.seekg(512000, ios::beg);
+  ifstream::pos_type Spart = ifs.tellg();
+  parts = pos/512000 + 1;
+  cout<<"hasta aqui llego!!  "<<part<<" "<<Spart<<endl;
+  if(part<parts){
+      vector<char> result(Spart);
+      if(part==1){
+        ifs.seekg(0, ios::beg);
+        ifs.read(result.data(), Spart);      
+      }else{
+        ifs.seekg((Spart*(part-1)),ios::beg);
+        ifs.read(result.data(), Spart);
+      }
+      return result;
+    }      
+  else{
+  vector<char> result((pos-(Spart*(part-1))));
+  ifs.seekg((Spart*(part-1)),ios::beg);
+  ifs.read(result.data(), (pos-(Spart*(part-1))));
   return result;
+  }
 }
 
-void fileToMesage(const string& fileName, message& msg) {
-  vector<char> bytes = readFileToBytes(fileName);
+void fileToMesage(const string& fileName, message& msg,int part) {
+
+  vector<char> bytes = readFileToBytes(fileName,part);
   msg.add_raw(bytes.data(), bytes.size());
 }
 
@@ -95,15 +111,33 @@ int main(int argc, char** argv) {
       for(const auto& p : songs)
         n << p.first;
       s.send(n);
-    } else if(op == "play") {
+    } else if(op == "file") {
+      message n;
+      n << "file";
+      s.send(n);
+
+    }
+      else if(op == "play") {
       // Use case 2: Send song file
       string songName;
+      int part;
       m >> songName;
       cout << "sending song " << songName
            << " at " << songs[songName] << endl;
+      m >> part;
+      cout << part;
       message n;
       n << "file";
-      fileToMesage(songs[songName], n);
+      
+      int parts;
+      ifstream ifs(songs[songName], ios::binary | ios::ate);
+      ifstream::pos_type pos = ifs.tellg();
+      parts = pos/512000 + 1;
+      cout <<" estas son als partes : "<< parts << endl;
+      n << parts;
+
+      fileToMesage(songs[songName], n , part);
+
       s.send(n);
     } else if(op == "add"){
       string songName;

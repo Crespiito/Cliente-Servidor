@@ -25,11 +25,31 @@ bool chekSong(string Song,SafeQueue<string> &Queue, socket &s){
 	}
 	return true;
 }
+void messageAddToFile(const message& msg, const string& fileName) {
+	const void *data;
+	msg.get(&data, 2);
+	size_t size = msg.size(2);
+	cout <<size;
+	ofstream ofs;
+	ofs.open (fileName, std::ofstream::out | std::ofstream::app);
+	ofs.write((char*)data, size);
+}
+
+void addFile(message& answer,Music *music){
+	string result;
+	answer >> result;
+	if (result == "file"){
+			messageAddToFile(answer,"song.ogg");
+		} else {
+			cout << "Don't know what to do!!!" << endl;
+				}
+}
 
 void messageToFile(const message& msg, const string& fileName) {
 	const void *data;
-	msg.get(&data, 1);
-	size_t size = msg.size(1);
+	msg.get(&data, 2);
+	size_t size = msg.size(2);
+	cout << size;
 
 	ofstream ofs(fileName, ios::binary);
 	ofs.write((char*)data, size);
@@ -55,18 +75,39 @@ void ReproducirMusica(Music *music , SafeQueue<string> &Queue , socket &s){
 				break;
 			}	
 			cancion = Queue.dequeue();
+			int part = 1;
+			int n = 10;
 			message m;
 			m<<"play";
 			m<<cancion;
+			m<<part;
 			s.send(m);
 			message answer;
 			s.receive(answer);
 			OpenFile(answer,music);
 			music->play();
 			while (music->getStatus() == SoundSource::Playing) {
-			continue;
+				if (part>=n){
+				continue;
+				}else
+				message m;
+				m<<"play";
+				m<<cancion;
+				part = part +1;
+				m<<part;
+				s.send(m);
+				message answer;
+				s.receive(answer);
+				addFile(answer,music);
+				int x;
+				answer >> x;
+				n = x;
+				cout << "estas son las partes recibidas :" << part <<endl;
 				}
+			if(music->getStatus() == SoundSource::Stopped){
+				break;
 			}
+		}
 	}
 
 
@@ -112,7 +153,7 @@ int main() {
 				l << file;
 				if (chekSong(file,ref(pl),ref(s))) {
 					pl.enqueue(file);
-					string play("play");
+					string play("file");
 					m << play;
 					m << file;
 					Mensaje = true;
@@ -132,15 +173,14 @@ int main() {
 				m << file;
 
 			}else if (argc == 4){
-				cout<<"hola"<<pl.isEmpty();
-				music.stop();
 				Mensaje = false;
-				if (pl.isEmpty()){
+				music.pause();
+				if (pl.isEmpty() && t[0].joinable()){
+					music.stop();
 					t[0].join();
-				}else{
-				
-				break;
+				}
 			}
+
 			cout << "Sending  some work!\n";
 
 			string result;
@@ -156,7 +196,7 @@ int main() {
 
 
 
-			cout << result;
+			cout <<"Result:  "<<result<<endl;
 
 			if (result == "add"){
 				string song;
@@ -177,9 +217,20 @@ int main() {
 			}
 			
 			if (result == "file"){
-				t[0] = thread(ReproducirMusica,&music,ref(pl),ref(s));
+				cout << " holiii";
+				if(t[0].joinable()){
+					music.stop();
+					t[0].join();
+					t[0] = thread(ReproducirMusica,&music,ref(pl),ref(s));
+				}else{
+				t[0] = thread(ReproducirMusica,&music,ref(pl),ref(s));	
+				}
 			}
 	}
 
 	return 0;
 }
+
+
+
+
