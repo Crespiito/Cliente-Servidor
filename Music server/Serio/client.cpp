@@ -29,7 +29,6 @@ void messageAddToFile(const message& msg, const string& fileName) {
 	const void *data;
 	msg.get(&data, 2);
 	size_t size = msg.size(2);
-	cout <<size;
 	ofstream ofs;
 	ofs.open (fileName, std::ofstream::out | std::ofstream::app);
 	ofs.write((char*)data, size);
@@ -49,7 +48,6 @@ void messageToFile(const message& msg, const string& fileName) {
 	const void *data;
 	msg.get(&data, 2);
 	size_t size = msg.size(2);
-	cout << size;
 
 	ofstream ofs(fileName, ios::binary);
 	ofs.write((char*)data, size);
@@ -102,7 +100,6 @@ void ReproducirMusica(Music *music , SafeQueue<string> &Queue , socket &s){
 				int x;
 				answer >> x;
 				n = x;
-				cout << "estas son las partes recibidas :" << part <<endl;
 				}
 			if(music->getStatus() == SoundSource::Stopped){
 				break;
@@ -130,7 +127,7 @@ int main() {
 
 	while(true){
 
-			cout <<"Seleccione una opcion\n1- list \n2- play \n3- add \n";
+			cout <<"Seleccione una opcion\n1- list \n2- play \n3- add \n4- next \n";
 
 			int argc;
 			bool Mensaje = false;
@@ -155,11 +152,13 @@ int main() {
 					pl.enqueue(file);
 					string play("file");
 					m << play;
-					m << file;
 					Mensaje = true;
 
 				}else{
 					cout<<"invalid Song";
+					string play("file");
+					m << play;
+					Mensaje = true;
 				}
 			}
 
@@ -195,9 +194,6 @@ int main() {
 			}
 
 
-
-			cout <<"Result:  "<<result<<endl;
-
 			if (result == "add"){
 				string song;
 				answer >> song;
@@ -217,7 +213,6 @@ int main() {
 			}
 			
 			if (result == "file"){
-				cout << " holiii";
 				if(t[0].joinable()){
 					music.stop();
 					t[0].join();

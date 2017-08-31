@@ -17,7 +17,6 @@ vector<char> readFileToBytes(const string& fileName,int part) {
   ifs.seekg(512000, ios::beg);
   ifstream::pos_type Spart = ifs.tellg();
   parts = pos/512000 + 1;
-  cout<<"hasta aqui llego!!  "<<part<<" "<<Spart<<endl;
   if(part<parts){
       vector<char> result(Spart);
       if(part==1){
