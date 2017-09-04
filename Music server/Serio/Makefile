@@ -31,6 +31,6 @@ server: server.cpp
 	
 
 clean:
-rm client.out server.out song.ogg
+	rm client.out server.out song.ogg
 
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/utp/zmq/lib
