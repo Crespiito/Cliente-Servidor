@@ -15,6 +15,7 @@ using MatD = vector<map<int,int>>;
 
 
 void dot (MatD &res , MatD &m1 ,int a){
+  cout<<res[4].size()*sizeof(map<int,int>)<<endl;
   int l = m1.size(); 
   for (int b = a; b < l; b++){
     auto c = m1[a].begin();
@@ -23,7 +24,7 @@ void dot (MatD &res , MatD &m1 ,int a){
         if(d->first == c->first){ 
                 if(a == b){
                   res[a][b] = 0;
-                }else if(res[a][b] > 0 ){
+                }else if(res[a].find(b) != res[a].end()){
                   res[a][b] =min(res[a][b],d->second + c->second);
                 }else{
                   res[a][b] = d->second + c->second;
@@ -36,7 +37,7 @@ void dot (MatD &res , MatD &m1 ,int a){
           ++d; 
         }
       }
-    if(a != b && res[a][b] > 0 ){  
+    if(a != b && res[a].find(b) != res[a].end()){  
         res[b][a]=res[a][b];
       }
     }
@@ -50,12 +51,8 @@ void ad0( MatD &m1, MatD &res) {
         res.push_back(col);
       }
   
-
-  thread_pool pool;
   for (int a = 0; a < i; a++){
-      pool.submit( 
-         [&res,&m1,a]() { dot(res,m1,a); });
-      //dot(res,m1,a);  
+      dot(res,m1,a);  
     } 
 }
 
@@ -73,8 +70,9 @@ void printMat( MatD &m) {
 void benchmark( string &fileName , MatD &MDispersa) {
   clock_t start, end;
   readGraph(fileName, MDispersa);
+  int sds;
+  sds << cin;
   int times = ceil(log(MDispersa.size()));
-  printMat(MDispersa);
   MatD r;
   start = clock(); 
   for (int  i = 0 ; i<times ; i++ ){
@@ -84,7 +82,6 @@ void benchmark( string &fileName , MatD &MDispersa) {
   }
   end = clock();
   printf("The time was: %f\n", ((float)(end - start)) / CLOCKS_PER_SEC); 
-  printMat(MDispersa);
 }
 
 int main(int argc, char **argv) {

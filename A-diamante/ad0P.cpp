@@ -13,6 +13,14 @@
 using namespace std;
 using MatD = vector<map<int,int>>;
 
+void printMat( MatD &m) {
+  for (int i = 0; i < m.size(); i++) {
+    for (auto j = m[i].begin(); j != m[i].end(); ++j){
+        cout << i <<","<< j->first <<" : "<<  j->second << "  " ;
+      }
+    cout<<endl;
+    }
+}
 
 void dot (MatD &res , MatD &m1 ,int a){
   int l = m1.size(); 
@@ -23,7 +31,7 @@ void dot (MatD &res , MatD &m1 ,int a){
         if(d->first == c->first){ 
                 if(a == b){
                   res[a][b] = 0;
-                }else if(res[a][b] > 0 ){
+                }else if(res[a].find(b) != res[a].end() ){
                   res[a][b] =min(res[a][b],d->second + c->second);
                 }else{
                   res[a][b] = d->second + c->second;
@@ -36,7 +44,11 @@ void dot (MatD &res , MatD &m1 ,int a){
           ++d; 
         }
       }
-    if(a != b && res[a][b] > 0 ){  
+
+    if(a != b && res[a].find(b) != res[a].end() ){  
+      if(a==0 && b == 2){
+          printf(" d, c %d %d %d \n ", d->second , c->second , res[a][b]);
+        }                
         res[b][a]=res[a][b];
       }
     }
@@ -49,7 +61,6 @@ void ad0( MatD &m1, MatD &res) {
         map <int,int> col;
         res.push_back(col);
       }
-  
 
   thread_pool pool;
   for (int a = 0; a < i; a++){
@@ -61,30 +72,21 @@ void ad0( MatD &m1, MatD &res) {
 
 
 
-void printMat( MatD &m) {
-  for (int i = 0; i < m.size(); i++) {
-    for (auto j = m[i].begin(); j != m[i].end(); ++j){
-        cout << i <<","<< j->first <<" : "<<  j->second << "  " ;
-      }
-    cout<<endl;
-    }
-}
 
 void benchmark( string &fileName , MatD &MDispersa) {
   clock_t start, end;
   readGraph(fileName, MDispersa);
   int times = ceil(log(MDispersa.size()));
-  printMat(MDispersa);
   MatD r;
-  start = clock(); 
   for (int  i = 0 ; i<times ; i++ ){
+    start = clock(); 
     ad0(MDispersa, r);
+    end = clock();
     MDispersa = r;
     r.clear();  
   }
-  end = clock();
+  MDispersa.clear();
   printf("The time was: %f\n", ((float)(end - start)) / CLOCKS_PER_SEC); 
-  printMat(MDispersa);
 }
 
 int main(int argc, char **argv) {
