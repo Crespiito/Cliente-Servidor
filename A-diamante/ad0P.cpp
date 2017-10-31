@@ -47,7 +47,6 @@ void dot (MatD &res , MatD &m1 ,int a){
 
     if(a != b && res[a].find(b) != res[a].end() ){  
       if(a==0 && b == 2){
-          printf(" d, c %d %d %d \n ", d->second , c->second , res[a][b]);
         }                
         res[b][a]=res[a][b];
       }
@@ -82,11 +81,11 @@ void benchmark( string &fileName , MatD &MDispersa) {
     start = clock(); 
     ad0(MDispersa, r);
     end = clock();
+    printf("The time was: %f\n", ((float)(end - start)) / CLOCKS_PER_SEC); 
     MDispersa = r;
     r.clear();  
   }
   MDispersa.clear();
-  printf("The time was: %f\n", ((float)(end - start)) / CLOCKS_PER_SEC); 
 }
 
 int main(int argc, char **argv) {

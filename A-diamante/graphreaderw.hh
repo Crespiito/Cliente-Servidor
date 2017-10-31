@@ -28,7 +28,7 @@ void readGraph(string fileName,vector<map<int,int>> &MDispersa) {
         MDispersa.push_back(col);
       }
       cout << "Graph with " << nodes << " nodes" << endl;
-    } else if (line[0] == 'a') {
+    } else if (line[0] == 'e') {
       
       char e;
       int Origen, Destino , Peso;
