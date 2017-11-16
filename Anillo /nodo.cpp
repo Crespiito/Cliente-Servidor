@@ -5,6 +5,7 @@
 #include <zmqpp/zmqpp.hpp>
 
 using namespace std;
+using namespace zmqpp;
 
 class Nodo {
 	public:
@@ -13,15 +14,16 @@ class Nodo {
 		string IpPropia;
 		string PuertoPropio;
 		string IpSiguiente;
-		string PuertoSiguiente
-}
+		string PuertoSiguiente;
+};
 
-void Espera(socket &s , Nodo &n){
-	Direccion  = n.IpPropia + n.PuertoPropio;
+
+void Esperando( socket &s , Nodo &n){
+	string Direccion  = n.IpPropia + n.PuertoPropio;
 	s.bind(Direccion);
 	while (true){
 		message m;
-		s.recive(m);
+		s.receive(m);
 
 		string Accion;
 
@@ -62,18 +64,18 @@ int main(){
 	Cliente.Peso = 0;  // organizar por random o shawan 
 	Cliente.PesoSiguente = 9999; // organizar por valor por defecto 
 	Cliente.IpPropia = "tcp://*:";
-	Cliente.Puerto = "5550";
+	Cliente.PuertoPropio = "5550";
 
 	socket S_Espera(Ctx_Espera,socket_type::rep);
 	socket S_Envio(Ctx_Envio,socket_type::req);
 
 	thread t_Escucha;
 
-	t_Escucha = thread(Espera,ref(S_Espera),ref(Cliente));
+	t_Escucha = thread(Esperando,ref(S_Espera),ref(Cliente));
 
 	while (true){
 		int opcion;
-		cout << "menu"
+		cout << "menu";
 		cin >> opcion;
 
 		if (opcion == 1){
@@ -83,10 +85,34 @@ int main(){
 			while(ubicado){
 				int coneccion ;
 				string Direccion = Cliente.IpSiguiente + Cliente.PuertoSiguiente;
-				coneccion == S_Envio.conect(Direccion);
+				coneccion == S_Envio.connect(Direccion);
 				assert(coneccion == 0);
 
+				message M , R;
 
+
+				M << "Ingresar";
+				M << Cliente;
+
+				S_Envio.send(M);
+				S_Envio.receive(R);
+
+				string Accion;
+
+				R >> Accion;
+
+				if ( Accion == "Ok"){
+					R >> Cliente.IpSiguiente;
+					R >> Cliente.PuertoSiguiente;
+					R >> Cliente.PesoSiguente; 
+					ubicado = true;
+				}
+				if ( Accion == "No"){
+					R >> Cliente.IpSiguiente;
+					R >> Cliente.PuertoSiguiente;
+				}
+
+				S_Envio.disconect(Direccion);
 
 			}
 
