@@ -1,53 +1,115 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <assert.h> 
+#include <assert.h>
+#include <set>
+#include <random>
 #include <zmqpp/zmqpp.hpp>
 
 using namespace std;
 using namespace zmqpp;
 
 class Nodo {
-	public:
-		int Peso;
-		int PesoSiguente;
+	private:
+		string Peso;
+		string PesoSiguiente;
 		string IpPropia;
 		string PuertoPropio;
 		string IpSiguiente;
 		string PuertoSiguiente;
+
+	public:
+	  string getPeso(){
+			return Peso;
+		}
+		string getPesoSiguiente(){
+			return PesoSiguiente;
+		}
+		string getIpPropia(){
+			return IpPropia;
+		}
+		string getPuertoPropio(){
+			return PuertoPropio;
+		}
+		string getIpSiguiente(){
+			return IpSiguiente;
+		}
+		string getPuertoSiguiente(){
+			return PuertoSiguiente;
+		}
+
+		void setPeso(string n){
+			Peso = n;
+		}
+		void setPesoSiguiente(string n){
+			PesoSiguiente = n;
+		}
+		void setIpPropia(string n){
+			IpPropia = n;
+		}
+		void setPuertoPropio(string n){
+			PuertoPropio = n;
+		}
+		void setIpSiguiente(string n){
+			IpSiguiente = n;
+		}
+		void setPuertoSiguiente(string n){
+			PuertoSiguiente = n;
+		}
 };
 
 
+void message_Nodo(message &m, Nodo &n){
+
+	string Dato;
+	
+	m >> Dato;
+	n.setIpSiguiente(Dato);
+	m >> Dato;
+	n.setPuertoSiguiente(Dato);
+	m >> Dato;
+	n.setPesoSiguiente(Dato);
+}
+
+void nodo_Message(message &m, Nodo &n){
+
+	string Dato;
+	
+	m << n.getIpSiguiente();
+	m << n.getPuertoSiguiente();
+	m << n.getPesoSiguiente();
+}
+
 void Esperando( socket &s , Nodo &n){
-	string Direccion  = n.IpPropia + n.PuertoPropio;
+	string Direccion  = n.getIpPropia() + n.getPuertoPropio();
+	
 	s.bind(Direccion);
 	while (true){
 		message m;
 		s.receive(m);
-
 		string Accion;
-
 		m >> Accion;
 
 		if (Accion == "Ingresar"){
-			Nodo Entrante; 
-			m >> Entrante;
-			if(Entrante.Peso > n.Peso && Entrante.Peso < n.PesoSiguente ){
+			Nodo Entrante;
+
+			message_Nodo(m,Entrante);
+
+			if(stoi(Entrante.getPeso()) > stoi(n.getPeso()) && stoi(Entrante.getPeso()) < stoi(n.getPesoSiguiente())){
+				
 				message R;
 				R << "Ok";
-				R << n.IpSiguiente;
-				R << n.PuertoSiguiente;
-				R << n.PesoSiguente;
+				nodo_Message(R,n);
 				s.send(R);
-				n.IpSiguiente = Entrante.IpPropia;
-				n.PuertoSiguiente = Entrante.PuertoPropio;
-				n.PesoSiguente = Entrante.Peso;
-				
+				n.setIpSiguiente(Entrante.getIpPropia());
+				n.setPuertoSiguiente(Entrante.getPuertoPropio());
+				n.setPesoSiguiente(Entrante.getPeso());
+
 			}else{
 				message R;
 				R << "No";
-				R << n.IpSiguiente;
-				R << n.PuertoSiguiente;
+				R << n.getIpSiguiente();
+				R << n.getPuertoSiguiente();
 				s.send(R);
 			}
 		}
@@ -55,19 +117,62 @@ void Esperando( socket &s , Nodo &n){
 
 }
 
-int main(){
+// void nodo_Message(message m, Nodo &n) {
+// 	m << n.IpSiguiente;
+// 	m << n.PuertoSiguiente;
+// 	//m << to_string(n.PesoSiguiente);
+// 	m << n.PesoSiguiente;
+// }
+	// int Peso;
+	// int PesoSiguente;
+	// string IpPropia;
+	// string PuertoPropio;
+	// string IpSiguiente;
+	// string PuertoSiguiente;
 
-	context Ctx_Espera;
-	context Ctx_Envio;
+// void message_Nodo(message m, Nodo &n) {
+// 	m << n.;
+// 	int Peso;
+// 	int PesoSiguente;
+// 	string IpPropia;
+// 	string PuertoPropio;
+// 	string IpSiguiente;
+// 	string PuertoSiguiente;
+// }
 
+
+int main(int argc, char const *argv[]){
+
+	context ctx;
 	Nodo Cliente;
-	Cliente.Peso = 0;  // organizar por random o shawan 
-	Cliente.PesoSiguente = 9999; // organizar por valor por defecto 
-	Cliente.IpPropia = "tcp://*:";
-	Cliente.PuertoPropio = "5550";
 
-	socket S_Espera(Ctx_Espera,socket_type::rep);
-	socket S_Envio(Ctx_Envio,socket_type::req);
+	// context Ctx_Espera;
+	// context Ctx_Envio;
+	if (argc <= 4){
+		string Tipo(argv[1]);
+		if (Tipo == "C"){
+			string puerto(argv[2]);
+			string peso(argv[3]);
+			Cliente.setIpPropia("tcp://*:");
+			Cliente.setPuertoPropio(puerto);
+			Cliente.setPeso(peso);
+		}
+
+		cout<<"gola"<<endl;
+		if (Tipo == "M"){
+			string puerto(argv[2]);
+			Cliente.setPeso("0");  // organizar por random o shawan
+			Cliente.setIpPropia("tcp://*:");
+			Cliente.setPuertoPropio(puerto);
+			Cliente.setIpSiguiente("tcp://*:");
+			Cliente.setPuertoSiguiente(puerto);			
+			Cliente.setPesoSiguiente("9999"); // organizar por valor por defecto
+		}
+	}
+
+
+	socket S_Espera(ctx,socket_type::rep);
+	socket S_Envio(ctx,socket_type::req);
 
 	thread t_Escucha;
 
@@ -80,44 +185,46 @@ int main(){
 
 		if (opcion == 1){
 			bool ubicado = false;
-			cin >> Cliente.IpSiguiente;
-			cin >> Cliente.PuertoSiguiente;
+			string Direccion_P;
+			cin >> Direccion_P;
+			Cliente.setIpSiguiente(Direccion_P);
+			cin >> Direccion_P;
+			Cliente.setPuertoSiguiente(Direccion_P);
 			while(ubicado){
-				int coneccion ;
-				string Direccion = Cliente.IpSiguiente + Cliente.PuertoSiguiente;
-				coneccion == S_Envio.connect(Direccion);
-				assert(coneccion == 0);
+
+				string Direccion = Cliente.getIpSiguiente() + Cliente.getPuertoSiguiente();
+				S_Envio.connect(Direccion);
 
 				message M , R;
 
 
 				M << "Ingresar";
-				M << Cliente;
+
+				nodo_Message(M,Cliente);
 
 				S_Envio.send(M);
 				S_Envio.receive(R);
-
 				string Accion;
 
 				R >> Accion;
 
 				if ( Accion == "Ok"){
-					R >> Cliente.IpSiguiente;
-					R >> Cliente.PuertoSiguiente;
-					R >> Cliente.PesoSiguente; 
+					message_Nodo(R,Cliente);
 					ubicado = true;
 				}
 				if ( Accion == "No"){
-					R >> Cliente.IpSiguiente;
-					R >> Cliente.PuertoSiguiente;
+					string Dato;
+					R >> Dato;
+					Cliente.setIpSiguiente(Dato);
+					R >> Dato;
+					Cliente.setPuertoSiguiente(Dato);
 				}
-
-				S_Envio.disconect(Direccion);
+				S_Envio.disconnect(Direccion);
 
 			}
 
 		}
-	} 
+	}
 
 
 
