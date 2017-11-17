@@ -14,13 +14,20 @@ using namespace zmqpp;
 class Nodo {
 	private:
 		string IpPropia;
+		string DireccionAnterior;
 		string PuertoPropio;
-
+		string Peso;
 	public:
 		string getIpPropia(){
 			return IpPropia;
 		}
 		string getPuertoPropio(){
+			return PuertoPropio;
+		}
+		string getPeso(){
+			return PuertoPropio;
+		}
+		string getDireccionAnterior(){
 			return PuertoPropio;
 		}
 		void setIpPropia(string n){
@@ -29,13 +36,19 @@ class Nodo {
 		void setPuertoPropio(string n){
 			PuertoPropio = n;
 		}
+		void setDireccionAnterior(string n){
+			IpPropia = n;
+		}
+		void setPeso(string n){
+			IpPropia = n;
+		}
 };
 
 
 
 int main(){
 	context ctx;
-	unordered_map<string, string> Lista;
+	unordered_map<string, nodo> Lista;
 	Nodo Central;
 	socket S_Espera(ctx,socket_type::rep);
 	socket S_Envio(ctx,socket_type::req);
@@ -50,19 +63,41 @@ int main(){
 		message M;
 		S_Espera.receive(M);
 		string Accion;
-		cout <<"gola: "<<Direccion <<endl;
+		cout <<"gola new client: "<<Direccion <<endl;
 		M >> Accion;
 
 		if (Accion == "Ingresar"){
-				string llave, Dato;
+				Nodo Dato;
+				string llave, D_Nodo;
 				M >> llave;
-				M >> Dato;
+				M >> D_Nodo;
+				Dato.setDireccionAnterior(D_Nodo);
+				M >> D_Nodo;
+				Dato.setIpPropia(D_Nodo);
+				M >> D_Nodo;
+				Dato.setIpPuerto(D_Nodo);
+				M >> D_Nodo;
+				Dato.setPeso(D_Nodo);
+
 				Lista[llave] = Dato;
 				message R;
 				R << "Nodo Agregado";
 				S_Espera.send(R);
 		}
+		if (Accion == "Retirar"){
+				string llave, Dato;
+				M >> llave;
+				M >> Dato;
+				Lista.erase(llave);
+			}
+
+				Lista[llave] = Dato;
+				message R;
+				R << "Nodo Retirado";
+				S_Espera.send(R);
+		}
+
+
 	}
 
 }
-
