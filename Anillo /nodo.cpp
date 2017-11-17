@@ -154,6 +154,8 @@ void Esperando( socket &s , Nodo &n){
 				cout << mensaje_C;
 				S_Central.close();
 
+				cout << "Termino La Coneccion con el Central"<<endl;
+
 				n.setIpSiguiente(Entrante.getIpPropia());
 				n.setPuertoSiguiente(Entrante.getPuertoPropio());
 				n.setPesoSiguiente(Entrante.getPeso());
@@ -251,7 +253,7 @@ int main(int argc, char const *argv[]){
 			Cliente.setPuertoSiguiente(Direccion_P);
 			int i =0 ;
 			while(ubicado){
-				cout<< "i = " << i <<endl ;could
+				cout<< "i = " << i <<endl ;
 				string Direccion = Cliente.getIpSiguiente() + Cliente.getPuertoSiguiente();
 				S_Envio.connect(Direccion);
 				message M;
