@@ -116,6 +116,7 @@ void Esperando( socket &s , Nodo &n){
 		
 		cout <<"###### Esperando Coneccion  "<<endl; 
 		s.receive(m);
+		cout <<"###### Mensaje Entrante"<<endl;
 		string Accion;
 		m >> Accion;
 
@@ -127,7 +128,6 @@ void Esperando( socket &s , Nodo &n){
 			int PesoEntrante = stoi(Entrante.getPeso());
 			int PesoPropio = stoi(n.getPeso());
 			int PesoSiguiente = stoi(n.getPesoSiguiente());
-			cout <<"\n####### Pesos"<<Entrante.getPeso() <<"  "<< n.getPeso() <<"  "<< n.getPesoSiguiente()<<endl;
 
 			if((PesoEntrante > PesoPropio) && (PesoEntrante < PesoSiguiente) ) {
 				
@@ -146,23 +146,22 @@ void Esperando( socket &s , Nodo &n){
 
 				message P_Central;
 
+
+				// Modificadores del valor actual;
+
 				P_Central << "Ingresar";
 				P_Central << Entrante.getIpPropia() + Entrante.getPuertoPropio();
-				cout <<"###### hola  1#"<< Entrante.getIpPropia() + Entrante.getPuertoPropio()<<endl;
 				P_Central << n.getIpPropia() + n.getPuertoPropio();
-				cout <<"###### hola  2"<< n.getIpPropia() + n.getPuertoPropio()<<endl;
 				P_Central << n.getIpSiguiente();
-				cout <<"###### hola  3"<<n.getIpSiguiente()<<endl;
 				P_Central << n.getPuertoSiguiente();
-				cout <<"###### hola  4"<<n.getPuertoSiguiente()<<endl;
 				P_Central << n.getPesoSiguiente();
-				cout <<"###### hola  5"<<n.getPesoSiguiente()<<endl;
-				P_Central << n.getIpPropia();
-				cout <<"###### hola  seis"<< Entrante.getIpPropia()<<endl;
-				P_Central << n.getPuertoPropio();
-				cout <<"###### hola  siente"<< Entrante.getPuertoPropio()<<endl;
-				P_Central << n.getPeso();
-				cout <<"###### hola  8"<< Entrante.getPeso()<<endl;
+				
+
+				//Modificadores del valor anterior
+
+				P_Central << Entrante.getIpPropia();
+				P_Central << Entrante.getPuertoPropio();
+				P_Central << Entrante.getPeso();
 
 				
 				S_Central.send(P_Central);
@@ -189,7 +188,7 @@ void Esperando( socket &s , Nodo &n){
 
 		if (Accion == "Cambio"){
 
-			cout <<"#### Realizado Cambio"<<endl;
+			cout <<"#### Realizando Cambio"<<endl;
 
 			string Dato;
 			m >> Dato; 
@@ -200,7 +199,6 @@ void Esperando( socket &s , Nodo &n){
 			n.setPesoSiguiente(Dato);
 			message message_R;
 
-			cout <<"###### Cambio Realizado"<<endl;
 			message_R << "Cambio Realizado";
 			s.send(message_R);
 
@@ -302,41 +300,33 @@ int main(int argc, char const *argv[]){
 
 	while (true){
 		int opcion;
-		cout << "menu";
+		cout << "menu ";  // Organizar menu 1 ingresar 2 retirarce 3 imprimir hash
 		cin >> opcion;
 
 		if (opcion == 1){
 			bool ubicado = true;
 			string Direccion_P;
-			cout << " ingresar : tcp://localhost:"<<endl;
+			cout << " ingresar IP: tcp://localhost:"<<endl;
 			cin >> Direccion_P;
 			Cliente.setIpSiguiente(Direccion_P);
-			cout << "ingresar : puerto"<<endl;
+			cout << "ingresar puerto: "<<endl;
 			cin >> Direccion_P;
 			Cliente.setPuertoSiguiente(Direccion_P);
-			int i =0 ;
+			int i =1 ;
 			while(ubicado){
-				cout<< "i = " << i <<endl ;
+				cout<< "Nodos Recorridos = " << i <<endl ;
 				string Direccion = Cliente.getIpSiguiente() + Cliente.getPuertoSiguiente();
 				S_Envio.connect(Direccion);
-
-				cout <<"###### hola Direccion"<< Direccion <<endl;
 
 				message M;
 				message R;
 				M << "Ingresar";
+				
 				nodo_Message(M,Cliente);
 
-				cout << "###### Enviandooooooo"<<endl;
 				S_Envio.send(M);
-				cout << "###### Envio realizado y ahora a receive"<<endl;
-
 				S_Envio.receive(R);
-
-				cout <<"###### recepcion realizada!"<<endl;
-
 				string Accion;
-
 				R >> Accion;
 
 				if ( Accion == "Ok"){
@@ -344,7 +334,6 @@ int main(int argc, char const *argv[]){
 					ubicado = false;
 				}
 				if ( Accion == "No"){
-					cout<<"Entro Al No"<<endl;
 					string Dato;
 					R >> Dato;
 					Cliente.setIpSiguiente(Dato);
@@ -352,7 +341,6 @@ int main(int argc, char const *argv[]){
 					Cliente.setPuertoSiguiente(Dato);
 				}
 				S_Envio.disconnect(Direccion);
-				cout << "paso El disconnect"<<endl;
 				i++;
 
 			}
@@ -361,22 +349,41 @@ int main(int argc, char const *argv[]){
 
 
 		if (opcion == 2){
+			
 			string Direccion_C;
 			Direccion_C = Cliente.getDireccionCentral();
 
-			cout <<" Direccion Central" <<  Direccion_C << endl;
-
 			S_Envio.connect(Direccion_C);
 			message C;
+			
 			C << "Retirar";
 			C << Cliente.getIpPropia() + Cliente.getPuertoPropio();
+			
 			S_Envio.send(C);	
 			message R; 
 			S_Envio.receive(R);
+			
 			string message_R;
 			R >> message_R;
-			cout << message_R;
+			cout << message_R<<endl;
 			S_Envio.disconnect(Direccion_C);
+
+		}
+
+		if (opcion == 3){
+			string Direccion_C;
+			Direccion_C = Cliente.getDireccionCentral();
+
+			S_Envio.connect(Direccion_C);
+			message C;
+			C << "Listar";
+			S_Envio.send(C);
+			
+			message R;
+			S_Envio.receive(R);
+			string message_R;
+			R >> message_R;
+			cout << message_R <<endl; 
 
 		}
 	}

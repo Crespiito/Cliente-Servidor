@@ -84,15 +84,14 @@ int main(){
 				Lista[llave] = Dato;
 				string D_Anterior = Dato.getDireccionAnterior();
 
+				Lista[Dato.getIpPropia()+Dato.getPuertoPropio()].setDireccionAnterior(llave);
+
 				M >> D_Nodo;
 				Lista[D_Anterior].setIpPropia(D_Nodo);
-				cout << "####### IpSiguiente "<< D_Nodo<<" "<<D_Anterior <<" "<< llave << "  ##"<<endl;
 				M >> D_Nodo;
 				Lista[D_Anterior].setPuertoPropio(D_Nodo);
-				cout << "####### PertoSiguiente "<< D_Nodo << "  ##"<<endl;
 				M >> D_Nodo;
 				Lista[D_Anterior].setPeso(D_Nodo);
-				cout << "####### PesoSiuente "<< D_Nodo << "  ##"<<endl;
 				
 				message R;
 	
@@ -103,8 +102,6 @@ int main(){
 				string llave;
 				Nodo Nodo_Retirar;
 				M >> llave;
-
-				cout <<"Retirar y llave : "<< llave <<endl;
 				
 				if (Lista.find(llave) != Lista.end()){
 
@@ -122,16 +119,16 @@ int main(){
 					message R_Cambio;
 					S_Envio.receive(R_Cambio);
 					string message_R;
-					cout << "###### aqui empeiza el error" <<endl;
 					R_Cambio >> message_R;
 					cout << message_R;
-					cout << "###### hasta aqui no llega la ejecucion"<<endl;
 					S_Envio.disconnect(D_Anterior);
 					
 					Lista.erase(llave);
 					Lista[D_Anterior].setIpPropia(Nodo_Retirar.getIpPropia());
 					Lista[D_Anterior].setPuertoPropio(Nodo_Retirar.getPuertoPropio());
 					Lista[D_Anterior].setPeso(Nodo_Retirar.getPeso());
+
+					Lista[Nodo_Retirar.getIpPropia()+Nodo_Retirar.getPuertoPropio()].setDireccionAnterior(D_Anterior);
 					
 					message R;
 					R << "Cambio Realizado";
@@ -142,6 +139,22 @@ int main(){
 					R << "No Perteneces al Anillo";
 					S_Espera.send(R);
 				}
+		}
+
+		if (Accion == "Listar"){
+			for (auto  a = Lista.begin()  ; a != Lista.end() ; ++a ){
+				cout<<"\n###############################"<<endl;
+				cout<<"### Llave : " << a->first<<endl; 
+				cout<<"### Direccion Anterior: "<<a->second.getDireccionAnterior() <<endl;
+				cout<<"### IpSiguiente: "<<a->second.getIpPropia() <<endl;
+				cout<<"### Puerto Siguiente "<<a->second.getPuertoPropio() <<endl;
+				cout<<"### PesoSiuente: " <<a->second.getPeso()<<endl;
+				cout<<"###############################"<<endl;
+			}
+			message R;
+			R << "Listado Realizado";
+			S_Espera.send(R);
+
 		}
 
 	}
