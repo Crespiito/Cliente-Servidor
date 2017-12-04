@@ -31,7 +31,7 @@ class Finger{
 		}
 
 		void setIP(String Ip){
-			IP = Ip;		
+			IP = Ip;
 		}
 
 		void setPuerto(String puerto){
@@ -39,7 +39,7 @@ class Finger{
 		}
 
 		void setPeso(String peso){
-			Peso = peso; 
+			Peso = peso;
 		}
 
 }
@@ -106,7 +106,7 @@ int main(){
 				Nodo Dato;
 				string llave, D_Nodo;
 
-				// Se agrega a la tabla hash con los datos del sigiente  
+				// Se agrega a la tabla hash con los datos del sigiente
 
 				M >> llave;
 				M >> D_Nodo;
@@ -117,35 +117,35 @@ int main(){
 				Dato.setPuertoPropio(D_Nodo);
 				M >> D_Nodo;
 				Dato.setPeso(D_Nodo);
-				String PosFt = D_Nodo;
 
-				//se toa el peso del seiguiente como indice de la FT 
+				//se toa el peso del seiguiente como indice de la FT
 
-				Ft[stoi(PosFt)] = Finger nodo;
-				Ft[stoi(PosFt)] = D_Nodo;
-				
+
 				Lista[llave] = Dato;
 
 				string D_Anterior = Dato.getDireccionAnterior();
 
-				//se actualizan los datos de la tabla  hash del antesesor al ingresado 
-				
+				//se actualizan los datos de la tabla  hash del antesesor al ingresado
+
 				Lista[Dato.getIpPropia()+Dato.getPuertoPropio()].setDireccionAnterior(llave);
 
 				M >> D_Nodo;
-				Lista[D_Anterior].setIpPropia(D_Nodo);	
-				//se toma la ip del que ingresa para la Ft 
-				Ft[stoi(PosFt)].setIP(D_Nodo); 
+				Lista[D_Anterior].setIpPropia(D_Nodo);
+				//se toma la ip del que ingresa para la Ft
 
 				M >> D_Nodo;
 				Lista[D_Anterior].setPuertoPropio(D_Nodo);
 				//se toma el pierto de la ip de el que ingresa para la Ft
-				Ft[stoi(PosFt)].setPuerto(D_Nodo);
-				
+
 				M >> D_Nodo;
 				Lista[D_Anterior].setPeso(D_Nodo);
-			
-				//Se responde con los valores de la FT segun su peso 
+
+				String PosFt = D_Nodo;
+				Ft[stoi(PosFt)] = Finger nodo;
+				Ft[stoi(PosFt)].setIP(Dato.getDireccionAnterior());
+
+
+				//Se responde con los valores de la FT segun su peso
 				message R;
 
 				M >> D_Nodo;
@@ -154,13 +154,19 @@ int main(){
 				M >> D_Nodo;
 				int Cantidad = log2(stoi(D_Nodo))
 
+				if (Cantidad > Ft.size()){
+					Cantidad = Ft.size();
+				}
+
+				R << Cantidad;
+
 				vector<string> Pesos;
-				
+
 				// se sacan los pesos siguientes
 
 				for (int i = 0; i < Cantidad; ++i)
 				{
-					M >> D_Nodo
+					M >> D_Nodo;
 					Pesos.push_back(D_Nodo);
 				}
 
@@ -176,34 +182,56 @@ int main(){
 									{
 										if(it->first > stoi(Pesos[i])){
 											R << Pesos[i];
-											R << it->second;
+											R << it->second.getIp();
 											Pesos.erase(i);
 											i = 0;
 										}
 									}
 							}
-						
-					} 	
 
+							if(Pesos.size() == 0){
+								break;
+							}
+				}
 
-	
+				if (Pesos.size() > 0) {
+						for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
+							for (int i = 0; i < Pesos.size(); ++i)
+							{
+								if(it->first > stoi(Pesos[i])){
+									R << Pesos[i];
+									R << it->second.getIp();
+									Pesos.erase(i);
+									i = 0;
+								}
+							}
+							if(Pesos.size() == 0){
+								break;
+							}
+						}
+				}
+
+				if (Pesos.size() > 0){
+					// es el mayor dar los datos del ultimo
+				}
+
 				R << "Nodo Agregado";
 
-				
+
 				S_Espera.send(R);
 		}
 		if (Accion == "Retirar"){
 				string llave;
 				Nodo Nodo_Retirar;
 				M >> llave;
-				
+
 				if (Lista.find(llave) != Lista.end()){
 
 					Nodo_Retirar = Lista[llave];
 					string D_Anterior(Nodo_Retirar.getDireccionAnterior());
-					
+
 					S_Envio.connect(D_Anterior);
-					
+
 					message Cambio;
 					Cambio << "Cambio";
 					Cambio << Nodo_Retirar.getIpPropia();
@@ -223,7 +251,7 @@ int main(){
 					Lista[D_Anterior].setPeso(Nodo_Retirar.getPeso());
 
 					Lista[Nodo_Retirar.getIpPropia()+Nodo_Retirar.getPuertoPropio()].setDireccionAnterior(D_Anterior);
-					
+
 					message R;
 					R << "Cambio Realizado";
 					S_Espera.send(R);
@@ -238,7 +266,7 @@ int main(){
 		if (Accion == "Listar"){
 			for (auto  a = Lista.begin()  ; a != Lista.end() ; ++a ){
 				cout<<"\n###############################"<<endl;
-				cout<<"### Llave : " << a->first<<endl; 
+				cout<<"### Llave : " << a->first<<endl;
 				cout<<"### Direccion Anterior: "<<a->second.getDireccionAnterior() <<endl;
 				cout<<"### IpSiguiente: "<<a->second.getIpPropia() <<endl;
 				cout<<"### Puerto Siguiente "<<a->second.getPuertoPropio() <<endl;
@@ -253,4 +281,3 @@ int main(){
 
 	}
 }
-

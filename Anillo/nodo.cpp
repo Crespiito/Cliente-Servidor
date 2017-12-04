@@ -13,7 +13,7 @@ using namespace zmqpp;
 class Finger{
 	private:
 		string IP;
-		string Puerto;
+		string Puerto;//nope
 		String Peso;
 	public:
 		String getIp(){
@@ -29,7 +29,7 @@ class Finger{
 		}
 
 		void setIP(String Ip){
-			IP = Ip;		
+			IP = Ip;
 		}
 
 		void setPuerto(String puerto){
@@ -37,7 +37,7 @@ class Finger{
 		}
 
 		void setPeso(String peso){
-			Peso = peso; 
+			Peso = peso;
 		}
 
 }
@@ -219,20 +219,18 @@ void Esperando( socket &s , Nodo &n){
 						n.setIpSiguiente(Entrante.getIpPropia());
 						n.setPuertoSiguiente(Entrante.getPuertoPropio());
 						n.setPesoSiguiente(Entrante.getPeso());
-
+						//FingerT
 					}else{
 				        R << "No";
 						vector<Finger>::iterator it
 						for (it = n.FingerT.begin() ; it != <n.FingerT.end(); ++it){
 							if(PesoEntrante < it->getPeso()){
 								R << it->getIp();
-								R << it->getPuerto();
 								break;
 						}
 
 						if ( it == n.FingerT.end()){
 							R << n.FingerT.back().getIp();
-							R << n.FingerT.back().getPuerto();
 						}
 
 						s.send(R);
@@ -337,19 +335,19 @@ int main(int argc, char const *argv[]){
 			 //Direccion del Anterioir
 			P_Central << Cliente.getIpPropia() + Cliente.getPuertoPropio();
 
-			 //informacion para el siguiente nodo 
+			 //informacion para el siguiente nodo
 
 			P_Central << Cliente.getIpSiguiente();
 			P_Central << Cliente.getPuertoSiguiente();
 			P_Central << Cliente.getPesoSiguiente();
-			
-			 //informacion para el nodo anterioir 
+
+			 //informacion para el nodo anterioir
 
 			P_Central << Cliente.getIpPropia();
 			P_Central << Cliente.getPuertoPropio();
 			P_Central << Cliente.getPeso();
 
-			 //Creacion de la Finger Tb sin direcciones 
+			 //Creacion de la Finger Tb sin direcciones
 
 			int Tamaño = log2(stoi(Cliente.getPesoSiguiente())
 
@@ -358,6 +356,9 @@ int main(int argc, char const *argv[]){
 
 			for (int f=0; f< Tamaño;f++){
 				int PesoFt = Cliente.getPeso() + pow(2,f);
+				if (PesoFt > stoi(Cliente.getPesoSiguiente())){
+					PesoFt = log(PesoFt)/log(stoi(Cliente.getPesoSiguiente()));
+				}
 				P_Central << PesoFt;
 				Finger Fing;
 				Fing.setPeso(PesoFt);
@@ -365,7 +366,7 @@ int main(int argc, char const *argv[]){
 			}
 
 			S_Envio.send(P_Central);
-			
+
 			S_Envio.receive(P_Central);
 			string mensaje_C;
 			P_Central >> mensaje_C;
