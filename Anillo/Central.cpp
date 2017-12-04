@@ -4,11 +4,45 @@
 #include <assert.h>
 #include <set>
 #include <unordered_map>
+#include <map>
 #include <random>
 #include <zmqpp/zmqpp.hpp>
 
 using namespace std;
 using namespace zmqpp;
+
+
+class Finger{
+	private:
+		string IP;
+		string Puerto;
+		String Peso;
+	public:
+		String getIp(){
+			return IP;
+		}
+
+		String getPuerto(){
+			return Puerto;
+		}
+
+		String getPeso(){
+			return Peso;
+		}
+
+		void setIP(String Ip){
+			IP = Ip;		
+		}
+
+		void setPuerto(String puerto){
+			Puerto = puerto;
+		}
+
+		void setPeso(String peso){
+			Peso = peso; 
+		}
+
+}
 
 
 class Nodo {
@@ -50,6 +84,7 @@ class Nodo {
 int main(){
 	context ctx_Espera, ctx_Envio;
 	unordered_map<string, Nodo> Lista;
+	map<int, Finger> Ft;
 	Nodo Central;
 	socket S_Espera(ctx_Espera,socket_type::rep);
 	socket S_Envio(ctx_Envio,socket_type::req);
@@ -70,6 +105,9 @@ int main(){
 		if (Accion == "Ingresar"){
 				Nodo Dato;
 				string llave, D_Nodo;
+
+				// Se agrega a la tabla hash con los datos del sigiente  
+
 				M >> llave;
 				M >> D_Nodo;
 				Dato.setDireccionAnterior(D_Nodo);
@@ -79,23 +117,79 @@ int main(){
 				Dato.setPuertoPropio(D_Nodo);
 				M >> D_Nodo;
 				Dato.setPeso(D_Nodo);
+				String PosFt = D_Nodo;
 
+				//se toa el peso del seiguiente como indice de la FT 
+
+				Ft[stoi(PosFt)] = Finger nodo;
+				Ft[stoi(PosFt)] = D_Nodo;
 				
 				Lista[llave] = Dato;
+
 				string D_Anterior = Dato.getDireccionAnterior();
 
+				//se actualizan los datos de la tabla  hash del antesesor al ingresado 
+				
 				Lista[Dato.getIpPropia()+Dato.getPuertoPropio()].setDireccionAnterior(llave);
 
 				M >> D_Nodo;
-				Lista[D_Anterior].setIpPropia(D_Nodo);
+				Lista[D_Anterior].setIpPropia(D_Nodo);	
+				//se toma la ip del que ingresa para la Ft 
+				Ft[stoi(PosFt)].setIP(D_Nodo); 
+
 				M >> D_Nodo;
 				Lista[D_Anterior].setPuertoPropio(D_Nodo);
+				//se toma el pierto de la ip de el que ingresa para la Ft
+				Ft[stoi(PosFt)].setPuerto(D_Nodo);
+				
 				M >> D_Nodo;
 				Lista[D_Anterior].setPeso(D_Nodo);
-				
+			
+				//Se responde con los valores de la FT segun su peso 
 				message R;
+
+				M >> D_Nodo;
+				int PEntrante = stoi(D_Nodo);
+
+				M >> D_Nodo;
+				int Cantidad = log2(stoi(D_Nodo))
+
+				vector<string> Pesos;
+				
+				// se sacan los pesos siguientes
+
+				for (int i = 0; i < Cantidad; ++i)
+				{
+					M >> D_Nodo
+					Pesos.push_back(D_Nodo);
+				}
+
+				bool Check = false;
+
+				for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
+							if ( PEntrante == it->first){
+								Check = true;
+							}
+
+							if (Check){
+									for (int i = 0; i < Pesos.size(); ++i)
+									{
+										if(it->first > stoi(Pesos[i])){
+											R << Pesos[i];
+											R << it->second;
+											Pesos.erase(i);
+											i = 0;
+										}
+									}
+							}
+						
+					} 	
+
+
 	
 				R << "Nodo Agregado";
+
+				
 				S_Espera.send(R);
 		}
 		if (Accion == "Retirar"){
@@ -122,7 +216,7 @@ int main(){
 					R_Cambio >> message_R;
 					cout << message_R;
 					S_Envio.disconnect(D_Anterior);
-					
+					Ft.erase(stoi(Lista[D_Anterior].getPeso()))
 					Lista.erase(llave);
 					Lista[D_Anterior].setIpPropia(Nodo_Retirar.getIpPropia());
 					Lista[D_Anterior].setPuertoPropio(Nodo_Retirar.getPuertoPropio());

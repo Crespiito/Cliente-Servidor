@@ -5,9 +5,42 @@
 #include <set>
 #include <random>
 #include <zmqpp/zmqpp.hpp>
+#include <math.h>
 
 using namespace std;
 using namespace zmqpp;
+
+class Finger{
+	private:
+		string IP;
+		string Puerto;
+		String Peso;
+	public:
+		String getIp(){
+			return IP;
+		}
+
+		String getPuerto(){
+			return Puerto;
+		}
+
+		String getPeso(){
+			return Peso;
+		}
+
+		void setIP(String Ip){
+			IP = Ip;		
+		}
+
+		void setPuerto(String puerto){
+			Puerto = puerto;
+		}
+
+		void setPeso(String peso){
+			Peso = peso; 
+		}
+
+}
 
 class Nodo {
 	private:
@@ -20,6 +53,9 @@ class Nodo {
 		string DireccionCentral;
 
 	public:
+
+		vector<Finger> FingerT;
+
 	  	string getPeso(){
 			return Peso;
 		}
@@ -185,10 +221,20 @@ void Esperando( socket &s , Nodo &n){
 						n.setPesoSiguiente(Entrante.getPeso());
 
 					}else{
+				        R << "No";
+						vector<Finger>::iterator it
+						for (it = n.FingerT.begin() ; it != <n.FingerT.end(); ++it){
+							if(PesoEntrante < it->getPeso()){
+								R << it->getIp();
+								R << it->getPuerto();
+								break;
+						}
 
-						R << "No";
-						R << n.getIpSiguiente();
-						R << n.getPuertoSiguiente();
+						if ( it == n.FingerT.end()){
+							R << n.FingerT.back().getIp();
+							R << n.FingerT.back().getPuerto();
+						}
+
 						s.send(R);
 					}
 				}else{
@@ -278,7 +324,7 @@ int main(int argc, char const *argv[]){
 			Cliente.setPuertoPropio(puerto);
 			Cliente.setIpSiguiente("tcp://localhost:");
 			Cliente.setPuertoSiguiente(puerto);
-			Cliente.setPesoSiguiente("9999"); // organizar por valor por defecto
+			Cliente.setPesoSiguiente("50"); // organizar por valor por defecto
 			Cliente.setDireccionCentral(DCentral);
 
 			S_Envio.connect(DCentral);
@@ -286,18 +332,40 @@ int main(int argc, char const *argv[]){
 			message P_Central;
 
 			P_Central << "Ingresar";
+			//llave
 			P_Central << Cliente.getIpPropia() + Cliente.getPuertoPropio();
+			 //Direccion del Anterioir
 			P_Central << Cliente.getIpPropia() + Cliente.getPuertoPropio();
+
+			 //informacion para el siguiente nodo 
 
 			P_Central << Cliente.getIpSiguiente();
 			P_Central << Cliente.getPuertoSiguiente();
 			P_Central << Cliente.getPesoSiguiente();
+			
+			 //informacion para el nodo anterioir 
+
 			P_Central << Cliente.getIpPropia();
 			P_Central << Cliente.getPuertoPropio();
 			P_Central << Cliente.getPeso();
 
+			 //Creacion de la Finger Tb sin direcciones 
+
+			int Tamaño = log2(stoi(Cliente.getPesoSiguiente())
+
+			P_Central << Cliente.getPeso();
+			P_Central << Cliente.getPesoSiguiente();
+
+			for (int f=0; f< Tamaño;f++){
+				int PesoFt = Cliente.getPeso() + pow(2,f);
+				P_Central << PesoFt;
+				Finger Fing;
+				Fing.setPeso(PesoFt);
+				Cliente.FingerT.push_back(Fing);
+			}
 
 			S_Envio.send(P_Central);
+			
 			S_Envio.receive(P_Central);
 			string mensaje_C;
 			P_Central >> mensaje_C;
@@ -421,6 +489,7 @@ int main(int argc, char const *argv[]){
 			string message_R;
 			R >> message_R;
 			cout << message_R <<endl;
+			S_Envio.disconnect(Direccion_C);
 
 		}
 	}
