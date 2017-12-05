@@ -147,89 +147,93 @@ int main(){
 
 				//Se responde con los valores de la FT segun su peso
 				message R;
+				R << "Nodo Agregado";
+				S_Espera.send(R);
+		}
 
+		if (Accion == "FingerT") {
+			message R;
+
+			M >> D_Nodo;
+			int PEntrante = stoi(D_Nodo);
+
+			M >> D_Nodo;
+			int Cantidad = log2(stoi(D_Nodo))
+
+			R << Cantidad;
+
+			vector<string> Pesos;
+
+			// se sacan los pesos siguientes
+
+			for (int i = 0; i < Cantidad; ++i)
+			{
 				M >> D_Nodo;
-				int PEntrante = stoi(D_Nodo);
+				Pesos.push_back(D_Nodo);
+			}
 
-				M >> D_Nodo;
-				int Cantidad = log2(stoi(D_Nodo))
+			bool Check = false;
 
-				if (Cantidad > Ft.size()){
-					Cantidad = Ft.size();
-				}
-
-				R << Cantidad;
-
-				vector<string> Pesos;
-
-				// se sacan los pesos siguientes
-
-				for (int i = 0; i < Cantidad; ++i)
-				{
-					M >> D_Nodo;
-					Pesos.push_back(D_Nodo);
-				}
-
-				bool Check = false;
-
-				for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
-							if ( PEntrante == it->first){
-								Check = true;
-							}
-
-							if (Check){
-									for (int i = 0; i < Pesos.size(); ++i)
-									{
-										if(it->first > stoi(Pesos[i])){
-											R << Pesos[i];
-											R << it->second.getIp();
-											Pesos.erase(i);
-											i = 0;
-										}
-									}
-							}
-
-							if(Pesos.size() == 0){
-								break;
-							}
-				}
-
-				if (Pesos.size() > 0) {
-						for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
-							for (int i = 0; i < Pesos.size(); ++i)
-							{
-								if(it->first > stoi(Pesos[i])){
-									R << Pesos[i];
-									R << it->second.getIp();
-									Pesos.erase(i);
-									i = 0;
-								}
-							}
-							if(Pesos.size() == 0){
-								break;
-							}
+			for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
+						if ( PEntrante == it->first){
+							Check = true;
 						}
-				}
 
-				if (Pesos.size() > 0){
-					auto it = Ft.begin();
+						if (Check){
+								for (int i = 0; i < Pesos.size(); ++i)
+								{
+									if(it->first > stoi(Pesos[i])){
+										R << Pesos[i];
+										R << it->second.getIp();
+										Pesos.erase(i);
+										i = 0;
+									}
+								}
+						}
+
+						if(Pesos.size() == 0){
+							break;
+						}
+			}
+
+			if (Pesos.size() > 0) {
+					for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
 						for (int i = 0; i < Pesos.size(); ++i)
 						{
+							if(it->first > stoi(Pesos[i])){
 								R << Pesos[i];
 								R << it->second.getIp();
 								Pesos.erase(i);
 								i = 0;
+							}
 						}
 						if(Pesos.size() == 0){
 							break;
 						}
-				}
+					}
+			}
 
-				R << "Nodo Agregado";
+			if (Pesos.size() > 0){
+				auto it = Ft.begin();
+					for (int i = 0; i < Pesos.size(); ++i)
+					{
+							R << Pesos[i];
+							R << it->second.getIp();
+							Pesos.erase(i);
+							i = 0;
+					}
+					if(Pesos.size() == 0){
+						break;
+					}
+			}
+
+			R << "Ft agregada";
 
 
-				S_Espera.send(R);
+			S_Espera.send(R);
+
 		}
+
 		if (Accion == "Retirar"){
 				string llave;
 				Nodo Nodo_Retirar;

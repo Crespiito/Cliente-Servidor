@@ -210,24 +210,6 @@ void Esperando( socket &s , Nodo &n){
 						P_Central << Entrante.getPuertoPropio();
 						P_Central << Entrante.getPeso();
 
-						//Creacion de la Finger Tb sin direcciones
-
-						int Tamaño = log2(stoi(Tamaño_Anillo));
-
-						P_Central << Entrante.getPeso();
-						P_Central << Tamaño_Anillo;
-
-						for (int f=0; f< Tamaño;f++){
-							int PesoFt = Entrante.getPeso() + pow(2,f);
-							if (PesoFt > stoi(Tamaño_Anillo)) {
-								PesoFt = log(PesoFt)/log(stoi(Tamaño_Anillo));
-							}
-							P_Central << PesoFt;
-							Finger Fing;
-							Fing.setPeso(PesoFt);
-							Cliente.FingerT.push_back(Fing); meter enr espuesta 
-						}
-
 						S_Central.send(P_Central);
 						S_Central.receive(P_Central);
 						string mensaje_C;
@@ -370,26 +352,39 @@ int main(int argc, char const *argv[]){
 			P_Central << Cliente.getPuertoPropio();
 			P_Central << Cliente.getPeso();
 
-			 //Creacion de la Finger Tb sin direcciones
+
+
+			S_Envio.send(P_Central);
+			S_Envio.receive(P_Central);
+			string mensaje_C;
+			P_Central >> mensaje_C;
+			cout <<endl<<  mensaje_C <<endl<<endl;
+
+			//solicitar Ft
+
+			//Creacion de la Finger Tb sin direcciones
+
+			message P_FinTable;
+
+			P_FinTable << "FingerT";
 
 			int Tamaño = log2(stoi(Tamaño_Anillo));
 
-			P_Central << Cliente.getPeso();
-			P_Central << Tamaño_Anillo;
+			P_FinTable  << Cliente.getPeso();
+			P_FinTable << Tamaño_Anillo;
 
 			for (int f=0; f< Tamaño;f++){
 				int PesoFt = Cliente.getPeso() + pow(2,f);
 				if (PesoFt > stoi(Tamaño_Anillo)) {
 					PesoFt = log(PesoFt)/log(stoi(Tamaño_Anillo));
 				}
-				P_Central << PesoFt;
+				P_FinTable << PesoFt;
 				Finger Fing;
 				Fing.setPeso(PesoFt);
 				Cliente.FingerT.push_back(Fing);
 			}
 
 			S_Envio.send(P_Central);
-
 			S_Envio.receive(P_Central);
 
 			int  Cantidad;
@@ -408,7 +403,6 @@ int main(int argc, char const *argv[]){
 					}
 				}
 			}
-			string mensaje_C;
 			P_Central >> mensaje_C;
 			cout <<endl<<  mensaje_C <<endl<<endl;
 			S_Envio.disconnect(DCentral);
