@@ -10,6 +10,10 @@
 using namespace std;
 using namespace zmqpp;
 
+string Tamaño_Anillo = "99";
+
+
+
 class Finger{
 	private:
 		string IP;
@@ -206,6 +210,23 @@ void Esperando( socket &s , Nodo &n){
 						P_Central << Entrante.getPuertoPropio();
 						P_Central << Entrante.getPeso();
 
+						//Creacion de la Finger Tb sin direcciones
+
+						int Tamaño = log2(stoi(Tamaño_Anillo));
+
+						P_Central << Entrante.getPeso();
+						P_Central << Tamaño_Anillo;
+
+						for (int f=0; f< Tamaño;f++){
+							int PesoFt = Entrante.getPeso() + pow(2,f);
+							if (PesoFt > stoi(Tamaño_Anillo)) {
+								PesoFt = log(PesoFt)/log(stoi(Tamaño_Anillo));
+							}
+							P_Central << PesoFt;
+							Finger Fing;
+							Fing.setPeso(PesoFt);
+							Cliente.FingerT.push_back(Fing); meter enr espuesta 
+						}
 
 						S_Central.send(P_Central);
 						S_Central.receive(P_Central);
@@ -276,7 +297,7 @@ void Esperando( socket &s , Nodo &n){
 //http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
 random_device rd;
 mt19937 gen(rd());
-uniform_int_distribution<> dis(1,9998);
+uniform_int_distribution<> dis(1,(stoi(Tamaño_Anillo)-1));
 
 string genId(){
 
@@ -310,6 +331,8 @@ int main(int argc, char const *argv[]){
 			Cliente.setPuertoPropio(puerto);
 			Cliente.setPeso(genId());
 			Cliente.setDireccionCentral(DCentral);
+
+
 		}
 
 		// ./nodo.out M 4800 tcp://localhost:5500
@@ -322,7 +345,7 @@ int main(int argc, char const *argv[]){
 			Cliente.setPuertoPropio(puerto);
 			Cliente.setIpSiguiente("tcp://localhost:");
 			Cliente.setPuertoSiguiente(puerto);
-			Cliente.setPesoSiguiente("50"); // organizar por valor por defecto
+			Cliente.setPesoSiguiente(Tamaño_Anillo); // organizar por valor por defecto
 			Cliente.setDireccionCentral(DCentral);
 
 			S_Envio.connect(DCentral);
@@ -349,15 +372,15 @@ int main(int argc, char const *argv[]){
 
 			 //Creacion de la Finger Tb sin direcciones
 
-			int Tamaño = log2(stoi(Cliente.getPesoSiguiente())
+			int Tamaño = log2(stoi(Tamaño_Anillo));
 
 			P_Central << Cliente.getPeso();
-			P_Central << Cliente.getPesoSiguiente();
+			P_Central << Tamaño_Anillo;
 
 			for (int f=0; f< Tamaño;f++){
 				int PesoFt = Cliente.getPeso() + pow(2,f);
-				if (PesoFt > stoi(Cliente.getPesoSiguiente())){
-					PesoFt = log(PesoFt)/log(stoi(Cliente.getPesoSiguiente()));
+				if (PesoFt > stoi(Tamaño_Anillo)) {
+					PesoFt = log(PesoFt)/log(stoi(Tamaño_Anillo));
 				}
 				P_Central << PesoFt;
 				Finger Fing;
@@ -368,6 +391,23 @@ int main(int argc, char const *argv[]){
 			S_Envio.send(P_Central);
 
 			S_Envio.receive(P_Central);
+
+			int  Cantidad;
+			string Peso_FT , IP_FT;
+			P_Central >> Cantidad;
+
+			for (int i = 0; i < Cantidad; ++i)
+			{
+				P_Central >> Peso_FT;
+				P_Central >> IP_FT;
+				for (int j = 0; j <Cliente.FingerT.size(); ++i)
+				{
+					if (Cliente.FingerT[j].getPeso() == Peso_FT )
+					{
+						Cliente.FingerT[j].setIP(IP_FT)
+					}
+				}
+			}
 			string mensaje_C;
 			P_Central >> mensaje_C;
 			cout <<endl<<  mensaje_C <<endl<<endl;

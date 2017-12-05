@@ -212,7 +212,17 @@ int main(){
 				}
 
 				if (Pesos.size() > 0){
-					// es el mayor dar los datos del ultimo
+					auto it = Ft.begin();
+						for (int i = 0; i < Pesos.size(); ++i)
+						{
+								R << Pesos[i];
+								R << it->second.getIp();
+								Pesos.erase(i);
+								i = 0;
+						}
+						if(Pesos.size() == 0){
+							break;
+						}
 				}
 
 				R << "Nodo Agregado";
