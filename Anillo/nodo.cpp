@@ -532,7 +532,7 @@ int main(int argc, char const *argv[]){
 			for (int i = 0; i < Cliente.FingerT.size(); ++i)
 			{
 				cout <<endl<<"################# FT #################"<<endl;
-			 	cout <<"##### Superioires ::  "<<Cliente.FingerT[i].getPeso()<<endl;
+			 	cout <<"##### Inferiores ::  "<<Cliente.FingerT[i].getPeso()<<endl;
 			 	cout <<"##### conectar :: "<<Cliente.FingerT[i].getIp()<<endl;
 			 	cout <<"##### LLave ::  " << Cliente.FingerT[i].getLlave()<<endl;
 			 	cout <<"########################################"<<endl;
