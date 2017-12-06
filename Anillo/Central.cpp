@@ -213,10 +213,11 @@ int main(){
 								{
 									cout << it->first <<"  " << stoi(Pesos[i])<<endl ;
 									if(it->first > stoi(Pesos[i])){
+										cout << "Cambio en ciclo 1 "<< it->second.getIp()<<endl;
 										R << Pesos[i];
 										R << it->second.getIp();
 										Pesos.erase(Pesos.begin()+i);
-										i = 0;
+										i = -1;
 									}
 								}
 						}
@@ -233,10 +234,11 @@ int main(){
 						{
 							cout << "ciclo 2 "<< it->first <<"  " << stoi(Pesos[i])<<endl ;
 							if(it->first > stoi(Pesos[i])){
+								cout << "Cambio en ciclo 1 "<< it->second.getIp()<<endl;
 								R << Pesos[i];
 								R << it->second.getIp();
 								Pesos.erase(Pesos.begin()+i);
-								i = 0;
+								i = -1;
 							}
 						}
 						if(Pesos.size() == 0){
@@ -246,7 +248,7 @@ int main(){
 			}
 
 			if (Pesos.size() > 0){
-				auto it = Ft.begin();
+				auto it = Ft.rbegin();
 					int i = 0;
 					while(true)
 					{
@@ -254,6 +256,7 @@ int main(){
 								break;
 							}
 							cout<<"Ciclo 3"<< it->first <<"  " << stoi(Pesos[i])<<endl ;
+							cout << "Cambio en ciclo 1 "<< it->second.getLlave()<<endl;
 							R << Pesos[i];
 							R << it->second.getLlave();
 							Pesos.erase(Pesos.begin());

@@ -302,7 +302,7 @@ void Esperando( socket &s , Nodo &n){
 						}
 
 						if ( it == n.FingerT.end()){
-							R << n.FingerT.back().getIp();
+							R << n.getIpSiguiente()+n.getPuertoSiguiente();
 						}
 
 						s.send(R);
