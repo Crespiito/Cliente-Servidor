@@ -150,7 +150,6 @@ int main(){
 
 				vector<string> Actualizar;
 
-				int Cantidad = log2(stoi(D_Nodo));
 				for (auto i = Ft.begin(); i != Ft.end(); ++i)
 				{	
 					i->second.setIP(Lista[i->second.getLlave()].getDireccionAnterior());
@@ -272,7 +271,7 @@ int main(){
 		}
 
 		if (Accion == "Retirar"){
-				string llave;
+				string llave , Peso_R;
 				Nodo Nodo_Retirar;
 				M >> llave;
 
@@ -306,6 +305,25 @@ int main(){
 					message R;
 					R << "Cambio Realizado";
 					S_Espera.send(R);
+
+					vector<string> Actualizar;
+
+					for (auto i = Ft.begin(); i != Ft.end(); ++i)
+					{	
+						i->second.setIP(Lista[i->second.getLlave()].getDireccionAnterior());
+						Actualizar.push_back(i->second.getLlave());
+					}
+
+						for (int i = 0; i < Actualizar.size(); ++i)
+					{
+						S_Envio.connect(Actualizar[i]);
+						message Act;
+						Act << "Actualizar";
+						S_Envio.send(Act);
+						S_Envio.receive(Act);
+						S_Envio.disconnect(Actualizar[i]);
+					}
+
 
 				}else{
 					message R;

@@ -574,7 +574,7 @@ int main(int argc, char const *argv[]){
 
 			C << "Retirar";
 			C << Cliente.getIpPropia() + Cliente.getPuertoPropio();
-
+			 
 			S_Envio.send(C);
 			message R;
 			S_Envio.receive(R);
