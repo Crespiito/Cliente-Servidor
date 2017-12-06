@@ -160,8 +160,6 @@ int main(){
 				R << "Nodo Agregado";
 				S_Espera.send(R);
 
-				cout <<" holi "<<endl;
-
 				for (int i = 0; i < Actualizar.size(); ++i)
 				{
 					S_Envio.connect(Actualizar[i]);
@@ -210,9 +208,7 @@ int main(){
 						if (Check){
 								for (int i = 0; i < Pesos.size(); ++i)
 								{
-									cout << it->first <<"  " << stoi(Pesos[i])<<endl ;
 									if(it->first > stoi(Pesos[i])){
-										cout << "Cambio en ciclo 1 "<< it->second.getIp()<<endl;
 										R << Pesos[i];
 										R << it->second.getIp();
 										Pesos.erase(Pesos.begin()+i);
@@ -231,9 +227,7 @@ int main(){
 					for (auto it = Ft.begin() ; it != Ft.end(); ++it){
 						for (int i = 0; i < Pesos.size(); ++i)
 						{
-							cout << "ciclo 2 "<< it->first <<"  " << stoi(Pesos[i])<<endl ;
 							if(it->first > stoi(Pesos[i])){
-								cout << "Cambio en ciclo 1 "<< it->second.getIp()<<endl;
 								R << Pesos[i];
 								R << it->second.getIp();
 								Pesos.erase(Pesos.begin()+i);
@@ -254,8 +248,6 @@ int main(){
 							if(Pesos.size() == 0){
 								break;
 							}
-							cout<<"Ciclo 3"<< it->first <<"  " << stoi(Pesos[i])<<endl ;
-							cout << "Cambio en ciclo 1 "<< it->second.getLlave()<<endl;
 							R << Pesos[i];
 							R << it->second.getLlave();
 							Pesos.erase(Pesos.begin());
@@ -334,17 +326,17 @@ int main(){
 
 		if (Accion == "Listar"){
 			for (auto  a = Lista.begin()  ; a != Lista.end() ; ++a ){
-				cout<<"\n###############################"<<endl;
+				cout<<"\n############TD#################"<<endl;
 				cout<<"### Llave : " << a->first<<endl;
 				cout<<"### Direccion Anterior: "<<a->second.getDireccionAnterior() <<endl;
 				cout<<"### IpSiguiente: "<<a->second.getIpPropia() <<endl;
-				cout<<"### Puerto Siguiente "<<a->second.getPuertoPropio() <<endl;
-				cout<<"### PesoSiuente: " <<a->second.getPeso()<<endl;
+				cout<<"### Puerto Siguiente: "<<a->second.getPuertoPropio() <<endl;
+				cout<<"### Peso Siguiente: " <<a->second.getPeso()<<endl;
 				cout<<"###############################"<<endl;
 			}
 
 			for (auto  a = Ft.begin()  ; a != Ft.end() ; ++a ){
-				cout<<"\n###############################"<<endl;
+				cout<<"\n############FT#################"<<endl;
 				cout<<"### Peso : " << a->first<<endl;
 				cout<<"### Direccion Anterior: "<<a->second.getIp() <<endl;
 				cout<<"### Llave : "<<a->second.getLlave()<<endl;

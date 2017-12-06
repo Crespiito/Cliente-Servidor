@@ -233,11 +233,6 @@ void Esperando( socket &s , Nodo &n){
 			int PesoPropio = stoi(n.getPeso());
 			int PesoSiguiente = stoi(n.getPesoSiguiente());
 
-			// bool entranteDiferenteActual = (Entrante.getPeso() != n.getPeso());
-			// bool entranteDiferenteSiguiente = (Entrante.getPeso() != n.getPesoSiguiente());
-			// cout <<"\nPesos"<<Entrante.getPeso() <<" "<<n.getPeso()<<" "<< n.getPesoSiguiente()<<endl;
-
-			// if (entranteDiferenteActual && entranteDiferenteSiguiente) {
 				if ((PesoEntrante != PesoSiguiente) && (PesoEntrante != PesoPropio)) {
 
 					if((PesoEntrante > PesoPropio) && (PesoEntrante < PesoSiguiente)) {
@@ -312,16 +307,6 @@ void Esperando( socket &s , Nodo &n){
 					s.send(R);
 				}
 			}
-			// 	else{
-			//
-			// 	R << "PesoIgual";
-			// 	if (!entranteDiferenteActual){
-			// 		R << "El Peso Entrante = Actual";
-			// 	}else{
-			// 		R << "El Peso Entrante = Siguiente";
-			// 	}
-			// 	s.send(R);
-			// }
 
 
 		if (Accion == "Cambio"){
@@ -431,52 +416,6 @@ int main(int argc, char const *argv[]){
 			P_Central >> mensaje_C;
 			cout <<endl<<  mensaje_C <<endl<<endl;
 
-			//solicitar Ft
-
-			//Creacion de la Finger Tb sin direcciones
-/*
-			message P_FinTable;
-
-			P_FinTable << "FingerT";
-
-			int Tama = log2(stoi(Tam_Anillo));
-
-			P_FinTable  << Cliente.getPeso();
-			P_FinTable << Tam_Anillo;
-
-			for (int f=0; f< Tama;f++){
-				int PesoFt = stoi(Cliente.getPeso()) + pow(2,f);
-				if (PesoFt > stoi(Tam_Anillo)) {
-					PesoFt = log(PesoFt)/log(stoi(Tam_Anillo));
-				}
-				P_FinTable << to_string(PesoFt);
-				Finger Fing;
-				Fing.setPeso(to_string(PesoFt));
-				Cliente.FingerT.push_back(Fing);
-			}
-
-			S_Envio.send(P_FinTable);
-			S_Envio.receive(P_Central);
-
-			int  Cantidad;
-			string Peso_FT , IP_FT;
-			P_Central >> Cantidad;
-
-			for (int i = 0; i < Cantidad; ++i)
-			{
-				P_Central >> Peso_FT;
-				P_Central >> IP_FT;
-				for (int j = 0; j <Cliente.FingerT.size(); ++j)
-				{
-					if (Cliente.FingerT[j].getPeso() == Peso_FT )
-					{
-						Cliente.FingerT[j].setIP(IP_FT);
-					}
-				}
-			}
-			P_Central >> mensaje_C;
-			cout <<endl<<  mensaje_C <<endl<<endl;
-			*/
 			S_Envio.disconnect(DCentral);
 		}
 	}
@@ -574,7 +513,7 @@ int main(int argc, char const *argv[]){
 
 			C << "Retirar";
 			C << Cliente.getIpPropia() + Cliente.getPuertoPropio();
-			 
+
 			S_Envio.send(C);
 			message R;
 			S_Envio.receive(R);
@@ -592,7 +531,11 @@ int main(int argc, char const *argv[]){
 	
 			for (int i = 0; i < Cliente.FingerT.size(); ++i)
 			{
-			 	cout << Cliente.FingerT[i].getPeso()<<": : " << Cliente.FingerT[i].getIp()<<": : :" << Cliente.FingerT[i].getLlave()<<endl;
+				cout <<endl<<"################# FT #################"<<endl;
+			 	cout <<"##### Superioires ::  "<<Cliente.FingerT[i].getPeso()<<endl;
+			 	cout <<"##### conectar :: "<<Cliente.FingerT[i].getIp()<<endl;
+			 	cout <<"##### LLave ::  " << Cliente.FingerT[i].getLlave()<<endl;
+			 	cout <<"########################################"<<endl;
 			}
 			string Direccion_C;
 			Direccion_C = Cliente.getDireccionCentral();
