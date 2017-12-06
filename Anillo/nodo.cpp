@@ -10,41 +10,42 @@
 using namespace std;
 using namespace zmqpp;
 
-string Tamaño_Anillo = "99";
+string Tam_Anillo = "99";
+
 
 
 
 class Finger{
 	private:
 		string IP;
-		string Puerto;//nope
-		String Peso;
+		string Llave;
+		string Peso;
 	public:
-		String getIp(){
+		string getIp(){
 			return IP;
 		}
 
-		String getPuerto(){
-			return Puerto;
+		string getLlave(){
+			return Llave;
 		}
 
-		String getPeso(){
+		string getPeso(){
 			return Peso;
 		}
 
-		void setIP(String Ip){
+		void setIP(string Ip){
 			IP = Ip;
 		}
 
-		void setPuerto(String puerto){
-			Puerto = puerto;
+		void setLlave(string llave){
+			Llave = llave;
 		}
 
-		void setPeso(String peso){
+		void setPeso(string peso){
 			Peso = peso;
 		}
 
-}
+};
 
 class Nodo {
 	private:
@@ -160,6 +161,68 @@ void Esperando( socket &s , Nodo &n){
 		string Accion;
 		m >> Accion;
 
+		if (Accion == "Actualizar"){
+			message R;
+			R<<"Ok";
+			s.send(R);
+
+			context ctx;
+
+			socket S_Central(ctx,socket_type::req);
+
+			string DireccionCentral =  n.getDireccionCentral();
+
+			S_Central.connect(DireccionCentral);
+
+			message P_FinTable , P_Central;
+
+			n.FingerT.clear();
+
+			P_FinTable << "FingerT";
+
+			int Tama = log2(stoi(Tam_Anillo));
+
+			P_FinTable  << n.getPeso();
+			P_FinTable << Tam_Anillo;
+
+			for (int f=0; f< Tama;f++){
+				int PesoFt = stoi(n.getPeso()) + pow(2,f);
+				if (PesoFt > stoi(Tam_Anillo)) {
+					PesoFt = log(PesoFt)/log(stoi(Tam_Anillo));
+				}
+				P_FinTable << to_string(PesoFt);
+				Finger Fing;
+				Fing.setPeso(to_string(PesoFt));
+				n.FingerT.push_back(Fing);
+			}
+
+			S_Central.send(P_FinTable);
+			S_Central.receive(P_Central);
+
+			int  Cantidad;
+			string Peso_FT , IP_FT;
+			P_Central >> Cantidad;
+
+			for (int i = 0; i < Cantidad; ++i)
+			{
+				P_Central >> Peso_FT;
+				P_Central >> IP_FT;
+				for (int j = 0; j <n.FingerT.size(); ++j)
+				{
+					if (n.FingerT[j].getPeso() == Peso_FT )
+					{
+						n.FingerT[j].setIP(IP_FT);
+						n.FingerT[j].setLlave(n.getIpPropia() + n.getPuertoPropio());
+					}
+				}
+			}
+
+			string mensaje_C;
+			P_Central >> mensaje_C;
+			cout <<endl<<  mensaje_C <<endl<<endl;
+			S_Central.disconnect(DireccionCentral);
+		}
+
 		if (Accion == "Ingresar"){
 
 			Nodo Entrante;
@@ -193,7 +256,6 @@ void Esperando( socket &s , Nodo &n){
 
 						message P_Central;
 
-
 						// Modificadores del valor actual
 
 						P_Central << "Ingresar";
@@ -210,8 +272,13 @@ void Esperando( socket &s , Nodo &n){
 						P_Central << Entrante.getPuertoPropio();
 						P_Central << Entrante.getPeso();
 
+						P_Central << Tam_Anillo;
+
 						S_Central.send(P_Central);
 						S_Central.receive(P_Central);
+
+						cout <<" holi 1"<<endl;
+
 						string mensaje_C;
 						P_Central >> mensaje_C;
 						cout << mensaje_C;
@@ -225,11 +292,13 @@ void Esperando( socket &s , Nodo &n){
 						//FingerT
 					}else{
 				        R << "No";
-						vector<Finger>::iterator it
-						for (it = n.FingerT.begin() ; it != <n.FingerT.end(); ++it){
-							if(PesoEntrante < it->getPeso()){
+				        cout<< "no";
+						vector<Finger>::iterator it;
+						for (it = n.FingerT.begin() ; it != n.FingerT.end(); ++it){
+							if(PesoEntrante < stoi(it->getPeso())){
 								R << it->getIp();
 								break;
+							}
 						}
 
 						if ( it == n.FingerT.end()){
@@ -279,7 +348,7 @@ void Esperando( socket &s , Nodo &n){
 //http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
 random_device rd;
 mt19937 gen(rd());
-uniform_int_distribution<> dis(1,(stoi(Tamaño_Anillo)-1));
+uniform_int_distribution<> dis(1,(stoi(Tam_Anillo)-1));
 
 string genId(){
 
@@ -327,7 +396,7 @@ int main(int argc, char const *argv[]){
 			Cliente.setPuertoPropio(puerto);
 			Cliente.setIpSiguiente("tcp://localhost:");
 			Cliente.setPuertoSiguiente(puerto);
-			Cliente.setPesoSiguiente(Tamaño_Anillo); // organizar por valor por defecto
+			Cliente.setPesoSiguiente(Tam_Anillo); // organizar por valor por defecto
 			Cliente.setDireccionCentral(DCentral);
 
 			S_Envio.connect(DCentral);
@@ -352,6 +421,8 @@ int main(int argc, char const *argv[]){
 			P_Central << Cliente.getPuertoPropio();
 			P_Central << Cliente.getPeso();
 
+			P_Central << Tam_Anillo;
+
 
 
 			S_Envio.send(P_Central);
@@ -363,28 +434,28 @@ int main(int argc, char const *argv[]){
 			//solicitar Ft
 
 			//Creacion de la Finger Tb sin direcciones
-
+/*
 			message P_FinTable;
 
 			P_FinTable << "FingerT";
 
-			int Tamaño = log2(stoi(Tamaño_Anillo));
+			int Tama = log2(stoi(Tam_Anillo));
 
 			P_FinTable  << Cliente.getPeso();
-			P_FinTable << Tamaño_Anillo;
+			P_FinTable << Tam_Anillo;
 
-			for (int f=0; f< Tamaño;f++){
-				int PesoFt = Cliente.getPeso() + pow(2,f);
-				if (PesoFt > stoi(Tamaño_Anillo)) {
-					PesoFt = log(PesoFt)/log(stoi(Tamaño_Anillo));
+			for (int f=0; f< Tama;f++){
+				int PesoFt = stoi(Cliente.getPeso()) + pow(2,f);
+				if (PesoFt > stoi(Tam_Anillo)) {
+					PesoFt = log(PesoFt)/log(stoi(Tam_Anillo));
 				}
-				P_FinTable << PesoFt;
+				P_FinTable << to_string(PesoFt);
 				Finger Fing;
-				Fing.setPeso(PesoFt);
+				Fing.setPeso(to_string(PesoFt));
 				Cliente.FingerT.push_back(Fing);
 			}
 
-			S_Envio.send(P_Central);
+			S_Envio.send(P_FinTable);
 			S_Envio.receive(P_Central);
 
 			int  Cantidad;
@@ -395,16 +466,17 @@ int main(int argc, char const *argv[]){
 			{
 				P_Central >> Peso_FT;
 				P_Central >> IP_FT;
-				for (int j = 0; j <Cliente.FingerT.size(); ++i)
+				for (int j = 0; j <Cliente.FingerT.size(); ++j)
 				{
 					if (Cliente.FingerT[j].getPeso() == Peso_FT )
 					{
-						Cliente.FingerT[j].setIP(IP_FT)
+						Cliente.FingerT[j].setIP(IP_FT);
 					}
 				}
 			}
 			P_Central >> mensaje_C;
 			cout <<endl<<  mensaje_C <<endl<<endl;
+			*/
 			S_Envio.disconnect(DCentral);
 		}
 	}
@@ -423,6 +495,7 @@ int main(int argc, char const *argv[]){
 		cout << "3. Imprimir hash" << endl;
 		cout << "Digite alguna opcion (1,2,3) : ";
 		cin >> opcion ;
+
 
 		if (opcion == 1){
 
@@ -469,11 +542,17 @@ int main(int argc, char const *argv[]){
 					ubicado = false;
 				}
 				if ( Accion == "No"){
-					string Dato;
+					string Dato,temp , Sub_ip ,Sub_puerto;
 					R >> Dato;
-					Cliente.setIpSiguiente(Dato);
-					R >> Dato;
-					Cliente.setPuertoSiguiente(Dato);
+					temp = Dato.substr(5);
+					size_t pos = temp.find(":");
+					Sub_ip = Dato.substr(0,pos+6);
+					Sub_puerto = Dato.substr(pos+6);
+
+					Cliente.setIpSiguiente(Sub_ip);
+					Cliente.setPuertoSiguiente(Sub_puerto);
+
+					cout << Sub_ip << Sub_puerto<<endl;
 				}
 
 				S_Envio.disconnect(Direccion);
@@ -510,7 +589,11 @@ int main(int argc, char const *argv[]){
 		if (opcion == 3){
 
 			cout << endl << " Ha seleccionado la opcion 3 (Listar Hash). " <<endl;
-
+	
+			for (int i = 0; i < Cliente.FingerT.size(); ++i)
+			{
+			 	cout << Cliente.FingerT[i].getPeso()<<": : " << Cliente.FingerT[i].getIp()<<": : :" << Cliente.FingerT[i].getLlave()<<endl;
+			}
 			string Direccion_C;
 			Direccion_C = Cliente.getDireccionCentral();
 

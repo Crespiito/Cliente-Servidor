@@ -15,34 +15,34 @@ using namespace zmqpp;
 class Finger{
 	private:
 		string IP;
-		string Puerto;
-		String Peso;
+		string Llave;
+		string Peso;
 	public:
-		String getIp(){
+		string getIp(){
 			return IP;
 		}
 
-		String getPuerto(){
-			return Puerto;
+		string getLlave(){
+			return Llave;
 		}
 
-		String getPeso(){
+		string getPeso(){
 			return Peso;
 		}
 
-		void setIP(String Ip){
+		void setIP(string Ip){
 			IP = Ip;
 		}
 
-		void setPuerto(String puerto){
-			Puerto = puerto;
+		void setLlave(string llave){
+			Llave = llave;
 		}
 
-		void setPeso(String peso){
+		void setPeso(string peso){
 			Peso = peso;
 		}
 
-}
+};
 
 
 class Nodo {
@@ -106,7 +106,7 @@ int main(){
 				Nodo Dato;
 				string llave, D_Nodo;
 
-				// Se agrega a la tabla hash con los datos del sigiente
+				// Se agrega a la tabla hash con los datos del siguiente
 
 				M >> llave;
 				M >> D_Nodo;
@@ -118,14 +118,14 @@ int main(){
 				M >> D_Nodo;
 				Dato.setPeso(D_Nodo);
 
-				//se toa el peso del seiguiente como indice de la FT
+				//se toma el peso del siguiente como indice de la FT
 
 
 				Lista[llave] = Dato;
 
 				string D_Anterior = Dato.getDireccionAnterior();
 
-				//se actualizan los datos de la tabla  hash del antesesor al ingresado
+				//se actualizan los datos de la tabla  hash del antecesor al ingresado
 
 				Lista[Dato.getIpPropia()+Dato.getPuertoPropio()].setDireccionAnterior(llave);
 
@@ -135,30 +135,58 @@ int main(){
 
 				M >> D_Nodo;
 				Lista[D_Anterior].setPuertoPropio(D_Nodo);
-				//se toma el pierto de la ip de el que ingresa para la Ft
+				//se toma el puerto de la ip de el que ingresa para la Ft
 
 				M >> D_Nodo;
 				Lista[D_Anterior].setPeso(D_Nodo);
 
-				String PosFt = D_Nodo;
-				Ft[stoi(PosFt)] = Finger nodo;
+				string PosFt = D_Nodo;
+				Finger node;
+				Ft[stoi(PosFt)] =node ;
 				Ft[stoi(PosFt)].setIP(Dato.getDireccionAnterior());
+				Ft[stoi(PosFt)].setLlave(llave);
 
+				M >> D_Nodo;
 
+				vector<string> Actualizar;
+
+				int Cantidad = log2(stoi(D_Nodo));
+				for (auto i = Ft.begin(); i != Ft.end(); ++i)
+				{	
+					i->second.setIP(Lista[i->second.getLlave()].getDireccionAnterior());
+					Actualizar.push_back(i->second.getLlave());
+				}
 				//Se responde con los valores de la FT segun su peso
 				message R;
 				R << "Nodo Agregado";
 				S_Espera.send(R);
+
+				cout <<" holi "<<endl;
+
+				for (int i = 0; i < Actualizar.size(); ++i)
+				{
+					S_Envio.connect(Actualizar[i]);
+					message Act;
+					Act << "Actualizar";
+					S_Envio.send(Act);
+					S_Envio.receive(Act);
+					S_Envio.disconnect(Actualizar[i]);
+				}
+
+
+
+
 		}
 
 		if (Accion == "FingerT") {
 			message R;
+			string D_Nodo;
 
 			M >> D_Nodo;
 			int PEntrante = stoi(D_Nodo);
 
 			M >> D_Nodo;
-			int Cantidad = log2(stoi(D_Nodo))
+			int Cantidad = log2(stoi(D_Nodo));
 
 			R << Cantidad;
 
@@ -170,11 +198,12 @@ int main(){
 			{
 				M >> D_Nodo;
 				Pesos.push_back(D_Nodo);
+
 			}
 
 			bool Check = false;
 
-			for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
+			for (auto it = Ft.begin() ; it != Ft.end(); ++it){
 						if ( PEntrante == it->first){
 							Check = true;
 						}
@@ -182,10 +211,11 @@ int main(){
 						if (Check){
 								for (int i = 0; i < Pesos.size(); ++i)
 								{
+									cout << it->first <<"  " << stoi(Pesos[i])<<endl ;
 									if(it->first > stoi(Pesos[i])){
 										R << Pesos[i];
 										R << it->second.getIp();
-										Pesos.erase(i);
+										Pesos.erase(Pesos.begin()+i);
 										i = 0;
 									}
 								}
@@ -196,14 +226,16 @@ int main(){
 						}
 			}
 
+
 			if (Pesos.size() > 0) {
-					for (auto it = Ft.begin() ; it != <Ft.end(); ++it){
+					for (auto it = Ft.begin() ; it != Ft.end(); ++it){
 						for (int i = 0; i < Pesos.size(); ++i)
 						{
+							cout << "ciclo 2 "<< it->first <<"  " << stoi(Pesos[i])<<endl ;
 							if(it->first > stoi(Pesos[i])){
 								R << Pesos[i];
 								R << it->second.getIp();
-								Pesos.erase(i);
+								Pesos.erase(Pesos.begin()+i);
 								i = 0;
 							}
 						}
@@ -215,17 +247,19 @@ int main(){
 
 			if (Pesos.size() > 0){
 				auto it = Ft.begin();
-					for (int i = 0; i < Pesos.size(); ++i)
+					int i = 0;
+					while(true)
 					{
+							if(Pesos.size() == 0){
+								break;
+							}
+							cout<<"Ciclo 3"<< it->first <<"  " << stoi(Pesos[i])<<endl ;
 							R << Pesos[i];
-							R << it->second.getIp();
-							Pesos.erase(i);
-							i = 0;
-					}
-					if(Pesos.size() == 0){
-						break;
+							R << it->second.getLlave();
+							Pesos.erase(Pesos.begin());
 					}
 			}
+
 
 			R << "Ft agregada";
 
@@ -258,7 +292,7 @@ int main(){
 					R_Cambio >> message_R;
 					cout << message_R;
 					S_Envio.disconnect(D_Anterior);
-					Ft.erase(stoi(Lista[D_Anterior].getPeso()))
+					Ft.erase(stoi(Lista[D_Anterior].getPeso()));
 					Lista.erase(llave);
 					Lista[D_Anterior].setIpPropia(Nodo_Retirar.getIpPropia());
 					Lista[D_Anterior].setPuertoPropio(Nodo_Retirar.getPuertoPropio());
@@ -287,6 +321,16 @@ int main(){
 				cout<<"### PesoSiuente: " <<a->second.getPeso()<<endl;
 				cout<<"###############################"<<endl;
 			}
+
+			for (auto  a = Ft.begin()  ; a != Ft.end() ; ++a ){
+				cout<<"\n###############################"<<endl;
+				cout<<"### Peso : " << a->first<<endl;
+				cout<<"### Direccion Anterior: "<<a->second.getIp() <<endl;
+				cout<<"### Llave : "<<a->second.getLlave()<<endl;
+				cout<<"###############################"<<endl;
+			}
+
+
 			message R;
 			R << "Listado Realizado";
 			S_Espera.send(R);
