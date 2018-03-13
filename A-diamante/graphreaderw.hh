@@ -3,7 +3,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include <map>
 
 
@@ -19,7 +18,7 @@ void readGraph(string fileName,vector<map<int,int>> &MDispersa) {
   while (getline(infile, line)) {
     istringstream iss(line);
     if (line[0] == 'p') {
-      //cambiar estructura por vector de hases de  tamaño n
+      //cambiar estructura por vector de hashes de tamaño n
       string s1, s2;
       int nodes;
       iss >> s1 >> s2 >> nodes;
